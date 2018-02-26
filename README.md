@@ -1,6 +1,6 @@
 # Problema
 Il metodo VeryLongIO esegue un'operazione di I/O molto lunga. L'I/O (accesso al disco, accesso alla rete, chiamate HTTP, accesso al db, ...) solitamente è fatto tramite chiamate ad API del sistema operativo che a sua volta utilizza thread di più basso livello (non applicativi). Il problema è quindi che il thread corrente rimane inutilmente bloccato in attesa che il metodo VeryLongIO termini la propria esecuzione. Se non rimanesse bloccato sarebbe libero di eseguire altro codice applicativo. 
-Ci sono scenari particolarmente critici come ad es. quando un'operazione di I/O tiene bloccato il thread UI (il solo thread che per ogni processo è deputato ad aggiornare la GUI) bloccando quindi la gestione di eventi (click, resize di finestre, ...) e l'aggiornamento della GUI.
+Ci sono scenari particolarmente critici come ad es. quando un'operazione di I/O tiene bloccato il thread UI (il solo thread che per ogni processo è deputato ad aggiornare la GUI) bloccando quindi la gestione di eventi (click, resize di finestre, ...) e l'aggiornamento della GUI stessa.
 
 ```csharp
 void Main()
@@ -33,7 +33,10 @@ void Dump(string text) => text.Dump($"Thread ID: {Thread.CurrentThread.ManagedTh
 ```
 
 # Task
-L'utilizzo della classe Task permette di eseguire parallelamente (in un thread separato rispetto al thread corrente) un blocco di codice.
+.NET mette a disposizione una classe (e relative API) che permette di eseguire più operazioni in parallelo: https://docs.microsoft.com/it-it/dotnet/csharp/async.
+
+La classe Task si trova in altri linguaggi (es. Java, JavaScript) con il nome di Promise.
+Task è un'astrazione del concetto di thread, più task potrebbero però essere eseguiti dallo stesso thread. In questo senso il Task esprime l'intenzione in senso astratto mentre il thread è il mezzo fisico per portarla a compimento.
 
 ```csharp
 Task<int> VeryLongIOAsync(int count = 2)
@@ -42,7 +45,7 @@ Task<int> VeryLongIOAsync(int count = 2)
 }
 ```
 
-E' quindi possibile eseguire un metodo in un thread (senza bloccare quello corrente) e invocare un callback al termine dell'operazione.
+I task consentono in modo semplice di aggiungere una continuation (AKA callback) da eseguire quando il task stesso è terminato:
 
 ```csharp
 void Main()
