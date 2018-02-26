@@ -64,6 +64,8 @@ void Main()
 
 # Async / Await
 
+Il "pattern" task / continuation in C# diventa un idioma grazie alle keyword async / await. Il precedente codice può essere così semplificato scrivendo:
+
 ```csharp
 async Task Main()
 {
@@ -138,3 +140,5 @@ interface IAwaitable<T>
 	IAwaiter<T> GetAwaiter();
 }
 ```
+
+# Task.Yield
