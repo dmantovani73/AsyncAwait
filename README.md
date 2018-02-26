@@ -162,9 +162,21 @@ async Task Main()
 ```
 
 # Task.Yield
+Task.Yield è un modo elegante per eseguire del codice in modo asincrono:
+
+```csharp
+async Task Main()
+{
+	Dump("Prima");
+	await Task.Yield();
+	
+	// Il blocco di codice che segue Task.Yield è eseguito in modo asincrono.
+	Dump("Dopo");
+}
+```
 
 # Riferimenti
-https://docs.microsoft.com/it-it/dotnet/csharp/async
-https://docs.microsoft.com/en-us/dotnet/standard/parallel-programming/task-based-asynchronous-programming
-https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
-https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-2-awaitable-awaiter-pattern
+* https://docs.microsoft.com/it-it/dotnet/csharp/async
+* https://docs.microsoft.com/en-us/dotnet/standard/parallel-programming/task-based-asynchronous-programming
+* https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
+* https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-2-awaitable-awaiter-pattern
