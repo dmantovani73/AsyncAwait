@@ -1,5 +1,6 @@
 # Problema
-Un metodo eseguito sequenzialmente blocca il thread corrente fino a quando non è terminata l'operazione di IO e quindi non può eseguire altre operazioni nel mentre.
+Il metodo VeryLongIO esegue un'operazione di I/O molto lunga. L'I/O (accesso al disco, accesso alla rete, chiamate HTTP, accesso al db, ...) solitamente è fatto tramite chiamate ad API del sistema operativo che a sua volta utilizza thread di più basso livello (non applicativi). Il problema è quindi che il thread corrente rimane inutilmente bloccato in attesa che il metodo VeryLongIO termini la propria esecuzione. Se non rimanesse bloccato sarebbe libero di eseguire altro codice applicativo. 
+Ci sono scenari particolarmente critici come ad es. quando un'operazione di I/O tiene bloccato il thread UI (il solo thread che per ogni processo è deputato ad aggiornare la GUI) bloccando quindi la gestione di eventi (click, resize di finestre, ...) e l'aggiornamento della GUI.
 
 ```csharp
 void Main()
