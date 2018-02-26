@@ -77,27 +77,40 @@ async Task Main()
 
 # Awaitable / Awaiter Pattern
 
+Alla base di async / await c'è una coppia di tipi che svolgono il ruolo di awaitable (ad es. il Task) / awaiter (il codice che avvia il task e si mette in attesa asincrona che termini). 
+Supponiamo ad esempio di voler implementare il tipo FuncAwaitable che permette di eseguire in modo asincrono (await) una Func<T>:
+
 ```csharp
 async Task Main()
 {
-	var result = await new FuncAwaitable<int>(() => 30);
+	var result = await new FuncAwaitable<int>(() => 10 + 20);
 	result.Dump();
-	
-// Utilizzo di un extension method.
-// var result = await new Func<int>(() => 20);
-// result.Dump();
-
-// In realtà tutto quello che c'è sotto non serve (è solo a scopo didattico) e basta così:
-// var result = await Task.Run(() => 30);
-// result.Dump();
 }
+```
 
-static class AwaitableExtensions
+E' possibile fare await di un tipo se questo espone un metodo GetAwaiter che ritorna un oggetto di tipo "awaiter". Incapsuliamo il contratto in un'interfaccia:
+
+```csharp
+interface IAwaitable<T>
 {
-	public static FuncAwaiter<T> GetAwaiter<T>(this Func<T> func) => new FuncAwaiter<T>(func);
+	IAwaiter<T> GetAwaiter();
 }
+```
 
+L'oggetto ritornato da GetAwaiter deve implementare l'interfaccia INotifyCompletion:
 
+```csharp
+interface IAwaiter<T> : INotifyCompletion
+{
+	bool IsCompleted { get; }
+
+	T GetResult();
+}
+```
+
+A questo punto implementiamo i due tipi:
+
+```csharp
 class FuncAwaitable<T> : IAwaitable<T>
 {
 	Func<T> func;
@@ -127,18 +140,31 @@ class FuncAwaiter<T> : IAwaiter<T>
 	
 	public T GetResult() => task.Result;
 }
+```
 
-interface IAwaiter<T> : INotifyCompletion
+In realtà il pattern funziona anche eliminando la class awaitable e sostituendola con un extension method. FuncAwaitable può quindi essere eliminato e sostituito con un extension method:
+
+```csharp
+static class AwaitableExtensions
 {
-	bool IsCompleted { get; }
-
-	T GetResult();
+	public static FuncAwaiter<T> GetAwaiter<T>(this Func<T> func) => new FuncAwaiter<T>(func);
 }
+```
 
-interface IAwaitable<T>
+Il precedente è un esempio solamente didattico perchè nella realtà per eseguire un modo asincrono una funzione è sufficiente scrivere:
+
+```csharp
+async Task Main()
 {
-	IAwaiter<T> GetAwaiter();
+	var result = await Task.Run(() => 10 + 20);
+	result.Dump();
 }
 ```
 
 # Task.Yield
+
+# Riferimenti
+https://docs.microsoft.com/it-it/dotnet/csharp/async
+https://docs.microsoft.com/en-us/dotnet/standard/parallel-programming/task-based-asynchronous-programming
+https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
+https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-2-awaitable-awaiter-pattern
