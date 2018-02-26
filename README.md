@@ -71,3 +71,66 @@ async Task Main()
 
 # Awaitable / Awaiter Pattern
 
+```csharp
+async Task Main()
+{
+	var result = await new FuncAwaitable<int>(() => 30);
+	result.Dump();
+	
+// Utilizzo di un extension method.
+// var result = await new Func<int>(() => 20);
+// result.Dump();
+
+// In realtà tutto quello che c'è sotto non serve (è solo a scopo didattico) e basta così:
+// var result = await Task.Run(() => 30);
+// result.Dump();
+}
+
+static class AwaitableExtensions
+{
+	public static FuncAwaiter<T> GetAwaiter<T>(this Func<T> func) => new FuncAwaiter<T>(func);
+}
+
+
+class FuncAwaitable<T> : IAwaitable<T>
+{
+	Func<T> func;
+	
+	public FuncAwaitable(Func<T> func)
+	{
+		this.func = func;
+	}
+	
+	public IAwaiter<T> GetAwaiter() => new FuncAwaiter<T>(func);
+}
+
+
+class FuncAwaiter<T> : IAwaiter<T>
+{
+	Task<T> task;
+	
+	public FuncAwaiter(Func<T> func)
+	{
+		task = new Task<T>(func);
+		task.Start();
+	}
+	
+	public void OnCompleted(Action continuation) => continuation?.Invoke();
+	
+	public bool IsCompleted => task.IsCompleted;
+	
+	public T GetResult() => task.Result;
+}
+
+interface IAwaiter<T> : INotifyCompletion
+{
+	bool IsCompleted { get; }
+
+	T GetResult();
+}
+
+interface IAwaitable<T>
+{
+	IAwaiter<T> GetAwaiter();
+}
+```
